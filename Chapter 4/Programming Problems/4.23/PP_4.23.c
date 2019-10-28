@@ -5,14 +5,8 @@
 #include <string.h>
 #include <errno.h>
 
-#define ARR_SIZE 255
-#define NUM_THREADS 3
-
 int *SIEVE;
 int INPUT = 0;
-
-#define MAX_INT 0x7fffffff
-#define MIN_INT 0x80000000
 
 void printArr (int *arr, int n) {
 	for (int i = 0; i < n; i++) {
@@ -61,8 +55,12 @@ void *printPrimes (void *param) {
 		}
 	}
 	
+	SIEVE = SIEVE - 2;
+	INPUT = INPUT + 2;
+	
 	printf("Total number of primes in sequence: %d\n", primeLen);
 	printArr(primes, primeLen);
+	free(primes);
 	
 	pthread_exit(0);
 }
@@ -93,6 +91,7 @@ int main (int argc, char **argv) {
 	}
 	
 	pthread_join(tid, NULL);
+	free(SIEVE);
 
 	return 0;
 }
