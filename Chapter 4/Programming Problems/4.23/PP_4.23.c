@@ -1,0 +1,99 @@
+#include <pthread.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+
+#define ARR_SIZE 255
+#define NUM_THREADS 3
+
+int *SIEVE;
+int INPUT = 0;
+
+#define MAX_INT 0x7fffffff
+#define MIN_INT 0x80000000
+
+void printArr (int *arr, int n) {
+	for (int i = 0; i < n; i++) {
+		printf("%d ", arr[i]);
+	}
+	printf("\n");
+}
+
+int nonZeroes (int *arr, int n) {
+	int nonZero = 0;
+	for (int i = 0; i < n; i++) {
+		if(arr[i] != 0) {
+			++nonZero;
+		}
+	}
+
+	return nonZero;
+}
+
+void fillSieve () {
+	for (int i = 0; i < INPUT; i++) {
+		SIEVE[i] = i;
+	}
+}
+
+void *printPrimes (void *param) {
+	fillSieve();
+	for (int i = 2; i*i <= INPUT; i++) {
+		if(SIEVE[i] == 0) {
+			continue;
+		}
+		for (int j = 2; j <= (INPUT-1) / i; j++) {
+			SIEVE[j*i] = 0;
+		}
+	}
+	SIEVE = SIEVE + 2;
+	INPUT = INPUT - 2;
+	int primeLen = nonZeroes(SIEVE, INPUT);
+	int *primes = (int*)malloc((primeLen)*sizeof(int));
+	
+	for (int i = 0; i < INPUT; i++) {
+		static int index = 0;
+		if(SIEVE[i]) {
+			primes[index] = SIEVE[i];
+			++index;
+		}
+	}
+	
+	printf("Total number of primes in sequence: %d\n", primeLen);
+	printArr(primes, primeLen);
+	
+	pthread_exit(0);
+}
+
+int main (int argc, char **argv) {
+	if (argc < 2 || argv[1] < 0) {
+		printf("Enter a positive integer...\n");
+		return 0;
+	}	
+	INPUT = atoi(argv[1]);
+	INPUT++;
+	
+	SIEVE = (int*)malloc((INPUT)*sizeof(int));
+	if(errno == ENOMEM) {
+		perror("malloc");
+		exit(EXIT_FAILURE);
+	}
+	
+	pthread_t tid;
+	pthread_attr_t attr;
+	pthread_attr_init(&attr);
+	int status;
+	
+	status = pthread_create(&tid, &attr, printPrimes, NULL);
+	if (status < 0) {
+		perror("pthread_create");
+		exit(EXIT_FAILURE);
+	}
+	
+	pthread_join(tid, NULL);
+
+	return 0;
+}
+
