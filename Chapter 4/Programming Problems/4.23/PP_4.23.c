@@ -42,25 +42,26 @@ void *printPrimes (void *param) {
 			SIEVE[j*i] = 0;
 		}
 	}
+	
 	SIEVE = SIEVE + 2;
 	INPUT = INPUT - 2;
-	int primeLen = nonZeroes(SIEVE, INPUT);
-	int *primes = (int*)malloc((primeLen)*sizeof(int));
-	
+	int primeLen = 0;
 	for (int i = 0; i < INPUT; i++) {
-		static int index = 0;
+		int temp = 0;
 		if(SIEVE[i]) {
-			primes[index] = SIEVE[i];
-			++index;
+			temp = SIEVE[primeLen];
+			SIEVE[primeLen] = SIEVE[i];
+			SIEVE[i] = temp;
+			++primeLen;
 		}
 	}
 	
-	SIEVE = SIEVE - 2;
-	INPUT = INPUT + 2;
-	
+	SIEVE = realloc(SIEVE - 2, (primeLen+2)*sizeof(int));
+	SIEVE = SIEVE + 2;
 	printf("Total number of primes in sequence: %d\n", primeLen);
-	printArr(primes, primeLen);
-	free(primes);
+	printArr(SIEVE, primeLen);
+	SIEVE = SIEVE - 2;
+	INPUT = primeLen;
 	
 	pthread_exit(0);
 }
