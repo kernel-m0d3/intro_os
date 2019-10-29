@@ -5,17 +5,17 @@
 #include <string.h>
 #include <errno.h>
 
-int *SIEVE;
-int INPUT = 0;
+unsigned long long int *SIEVE;
+unsigned int INPUT = 0;
 
-void printArr (int *arr, int n) {
+void printArr (unsigned long long int *arr, unsigned int n) {
 	for (int i = 0; i < n; i++) {
-		printf("%d ", arr[i]);
+		printf("%llu ", arr[i]);
 	}
 	printf("\n");
 }
 
-int nonZeroes (int *arr, int n) {
+int nonZeroes (unsigned long long int *arr, unsigned int n) {
 	int nonZero = 0;
 	for (int i = 0; i < n; i++) {
 		if(arr[i] != 0) {
@@ -27,25 +27,25 @@ int nonZeroes (int *arr, int n) {
 }
 
 void fillSieve () {
-	for (int i = 0; i < INPUT; i++) {
+	for (unsigned long long int i = 0; i < INPUT; i++) {
 		SIEVE[i] = i;
 	}
 }
 
 void *printPrimes (void *param) {
 	fillSieve();
-	for (int i = 2; i*i <= INPUT; i++) {
+	for (unsigned long long int i = 2; i*i <= INPUT; i++) {
 		if(SIEVE[i] == 0) {
 			continue;
 		}
-		for (int j = 2; j <= (INPUT-1) / i; j++) {
+		for (unsigned long long int j = 2; j <= (INPUT-1) / i; j++) {
 			SIEVE[j*i] = 0;
 		}
 	}
 	
 	SIEVE = SIEVE + 2;
 	INPUT = INPUT - 2;
-	int primeLen = 0;
+	unsigned int primeLen = 0;
 	for (int i = 0; i < INPUT; i++) {
 		int temp = 0;
 		if(SIEVE[i]) {
@@ -56,9 +56,9 @@ void *printPrimes (void *param) {
 		}
 	}
 	
-	SIEVE = realloc(SIEVE - 2, (primeLen+2)*sizeof(int));
+	SIEVE = realloc(SIEVE - 2, (primeLen+2)*sizeof(unsigned long long int));
 	SIEVE = SIEVE + 2;
-	printf("Total number of primes in sequence: %d\n", primeLen);
+	printf("Total number of primes in sequence: %u\n", primeLen);
 	printArr(SIEVE, primeLen);
 	SIEVE = SIEVE - 2;
 	INPUT = primeLen;
@@ -74,7 +74,7 @@ int main (int argc, char **argv) {
 	INPUT = atoi(argv[1]);
 	INPUT++;
 	
-	SIEVE = (int*)malloc((INPUT)*sizeof(int));
+	SIEVE = (unsigned long long int*)malloc((INPUT)*sizeof(unsigned long long int));
 	if(errno == ENOMEM) {
 		perror("malloc");
 		exit(EXIT_FAILURE);
@@ -92,6 +92,7 @@ int main (int argc, char **argv) {
 	}
 	
 	pthread_join(tid, NULL);
+	printf("Successfully printed %u prime numbers.\n", INPUT);
 	free(SIEVE);
 
 	return 0;
