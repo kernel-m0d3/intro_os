@@ -4,6 +4,8 @@ Multithreaded Sorting Application
 
 */
 
+
+
 #include <stdio.h>
 #include <unistd.h>
 #include <pthread.h>
@@ -14,8 +16,9 @@ Multithreaded Sorting Application
 int MIN_INT = 0x80000000;
 int MAX_INT = 0x7fffffff;
 
-int arr1[10] = {2,2,3,7,89,56,45,12,46,73};
-int arr2[10] = {0};
+int arr1[] = {2,2,3,7,89,56,45,12,46,73,34};
+const int arrLength = (sizeof arr1)/sizeof arr1[0];
+int *arr2;
 
 struct data {
 	int *array;
@@ -59,15 +62,13 @@ void *merge () {
 	int status;
 	struct data *passedData[2];
 	
-	int arrlen = (sizeof arr1)/sizeof arr1[0];
-	
-	printArr(arr1, arrlen);
+	printArr(arr1, arrLength);
 	printf("\nSorting...\n");
 	
 	for (int i = 0; i < 2; i++) {
 		passedData[i] = (struct data *) malloc(sizeof(struct data));
-		passedData[i]->array = arr1 + (arrlen/2)*i;
-		passedData[i]->length = arrlen/2;
+		passedData[i]->array = arr1 + (arrLength/2)*i;
+		passedData[i]->length = abs(arrLength*i - arrLength/2);
 		status = pthread_create(&tid[i], &attr, *sort, (void*)passedData[i]);
 		if (status < 0) {
 			perror("pthread_create");
@@ -82,39 +83,39 @@ void *merge () {
 	}
 	
 	
-	int *secondHalf = arr1 + arrlen / 2;
+	int *secondHalf = arr1 + arrLength / 2;
 	int *firstHalf = arr1;
-	for (int i = 0; i < arrlen; i++) {
+	for (int i = 0; i < arrLength; i++) {
 		if(*firstHalf < *secondHalf) {
 			arr2[i] = *firstHalf;
 			firstHalf++;
-			if (firstHalf == arr1 + arrlen / 2) {
+			if (firstHalf == arr1 + arrLength / 2) {
 				firstHalf = &MAX_INT;
 			}
 		} else {
 			arr2[i] = *secondHalf;
 			secondHalf++;
-			if (secondHalf == arr1 + arrlen) {
+			if (secondHalf == arr1 + arrLength) {
 				secondHalf = &MAX_INT;
 			}
 		}
 	}
 
-	printArr(arr2, arrlen);
+	printArr(arr2, arrLength);
 	
 	pthread_exit(0);
 }
 
-void generateRandom () {
+void generateRandom (int length) {
 	srand(time(0));
-	for (int i = 0; i < 10; i++) {
+	for (int i = 0; i < length; i++) {
 		arr1[i] = rand() % 100;
 	}
 }
 
-void checkIfSorted () {
-	for (int i = 1; i < 10; i++) {
-		if(arr2[i-1] > arr2[i]) {
+void checkIfSorted (int *array, int length) {
+	for (int i = 1; i < length; i++) {
+		if(array[i-1] > array[i]) {
 			printf("Array not sorted...\n");
 			return;
 		}
@@ -123,8 +124,10 @@ void checkIfSorted () {
 }
 
 int main (int argc, char **argv) {
-	printf("Generating 10 random numbers...\n");
-	generateRandom();
+	printf("Generating %d random numbers...\n", arrLength);
+	generateRandom(arrLength);
+	
+	arr2 = (int *)malloc((sizeof (int))*arrLength);
 	
 	pthread_t tid;
 	pthread_attr_t attr;
@@ -137,7 +140,7 @@ int main (int argc, char **argv) {
 		exit(EXIT_FAILURE);
 	}
 	pthread_join(tid,NULL);
-	checkIfSorted();
+	checkIfSorted(arr2, arrLength);
 
 	return EXIT_SUCCESS;
 }
