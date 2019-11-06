@@ -1,3 +1,9 @@
+/*
+
+Multithreaded Sorting Application
+
+*/
+
 #include <stdio.h>
 #include <unistd.h>
 #include <pthread.h>
