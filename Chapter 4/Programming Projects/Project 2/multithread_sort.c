@@ -13,6 +13,8 @@ Multithreaded Sorting Application
 #include <stdlib.h>
 #include <time.h>
 
+#define NUM_THREADS 2
+
 int MIN_INT = 0x80000000;
 int MAX_INT = 0x7fffffff;
 
@@ -52,52 +54,55 @@ void *sort (void *param) {
 		passedData->array[i] = max;
 	}
 	
+	printArr(passedData->array, passedData->length);
+	
 	pthread_exit(0);
 }
 
 void *merge () {
-	pthread_t tid[2];
+	pthread_t tid[NUM_THREADS];
 	pthread_attr_t attr;
 	pthread_attr_init(&attr);
 	int status;
-	struct data *passedData[2];
+	struct data *passedData[NUM_THREADS];
 	
 	printArr(arr1, arrLength);
 	printf("\nSorting...\n");
 	
-	for (int i = 0; i < 2; i++) {
+	int pieceLength = arrLength / NUM_THREADS;
+	
+	for (int i = 0; i < NUM_THREADS; i++) {
 		passedData[i] = (struct data *) malloc(sizeof(struct data));
-		passedData[i]->array = arr1 + (arrLength/2)*i;
-		passedData[i]->length = abs(arrLength*i - arrLength/2);
+		passedData[i]->array = arr1 + (pieceLength)*i;
+		passedData[i]->length = abs(arrLength*(i?1:0) - pieceLength);
 		status = pthread_create(&tid[i], &attr, *sort, (void*)passedData[i]);
 		if (status < 0) {
 			perror("pthread_create");
 			exit(EXIT_FAILURE);
 		}
 	}
-	for (int i = 0; i < 2; i++) {
+	for (int i = 0; i < NUM_THREADS; i++) {
 		pthread_join(tid[i], NULL);
 	}
-	for (int i = 0; i < 2; i++) {
+	for (int i = 0; i < NUM_THREADS; i++) {
 		free(passedData[i]);
 	}
 	
-	
-	int *secondHalf = arr1 + arrLength / 2;
+	int *secondHalf = arr1 + pieceLength;
 	int *firstHalf = arr1;
 	for (int i = 0; i < arrLength; i++) {
-		if(*firstHalf < *secondHalf) {
+		if(firstHalf == (arr1 + pieceLength)) {
+			arr2[i] = *secondHalf;
+			secondHalf++;
+		} else if(secondHalf == (arr1 + arrLength)) {
 			arr2[i] = *firstHalf;
 			firstHalf++;
-			if (firstHalf == arr1 + arrLength / 2) {
-				firstHalf = &MAX_INT;
-			}
+		} else if(*firstHalf < *secondHalf) {
+			arr2[i] = *firstHalf;
+			firstHalf++;
 		} else {
 			arr2[i] = *secondHalf;
 			secondHalf++;
-			if (secondHalf == arr1 + arrLength) {
-				secondHalf = &MAX_INT;
-			}
 		}
 	}
 
