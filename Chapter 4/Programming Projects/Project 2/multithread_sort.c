@@ -13,8 +13,6 @@ Multithreaded Sorting Application
 #include <stdlib.h>
 #include <time.h>
 
-#define NUM_THREADS 2
-
 int MIN_INT = 0x80000000;
 int MAX_INT = 0x7fffffff;
 
@@ -60,38 +58,36 @@ void *sort (void *param) {
 }
 
 void *merge () {
-	pthread_t tid[NUM_THREADS];
+	pthread_t tid[2];
 	pthread_attr_t attr;
 	pthread_attr_init(&attr);
 	int status;
-	struct data *passedData[NUM_THREADS];
+	struct data *passedData[2];
 	
 	printArr(arr1, arrLength);
 	printf("\nSorting...\n");
 	
-	int pieceLength = arrLength / NUM_THREADS;
-	
-	for (int i = 0; i < NUM_THREADS; i++) {
+	for (int i = 0; i < 2; i++) {
 		passedData[i] = (struct data *) malloc(sizeof(struct data));
-		passedData[i]->array = arr1 + (pieceLength)*i;
-		passedData[i]->length = abs(arrLength*(i?1:0) - pieceLength);
+		passedData[i]->array = arr1 + (arrLength/2)*i;
+		passedData[i]->length = abs(arrLength*i - arrLength/2);
 		status = pthread_create(&tid[i], &attr, *sort, (void*)passedData[i]);
 		if (status < 0) {
 			perror("pthread_create");
 			exit(EXIT_FAILURE);
 		}
 	}
-	for (int i = 0; i < NUM_THREADS; i++) {
+	for (int i = 0; i < 2; i++) {
 		pthread_join(tid[i], NULL);
 	}
-	for (int i = 0; i < NUM_THREADS; i++) {
+	for (int i = 0; i < 2; i++) {
 		free(passedData[i]);
 	}
 	
-	int *secondHalf = arr1 + pieceLength;
+	int *secondHalf = arr1 + arrLength / 2;
 	int *firstHalf = arr1;
 	for (int i = 0; i < arrLength; i++) {
-		if(firstHalf == (arr1 + pieceLength)) {
+		if(firstHalf == (arr1 + (arrLength / 2))) {
 			arr2[i] = *secondHalf;
 			secondHalf++;
 		} else if(secondHalf == (arr1 + arrLength)) {
