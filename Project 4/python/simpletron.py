@@ -11,13 +11,16 @@ def printStatus():
     print("memory: ", memory)
 
 def printHelp():
-    print("enter \"status\" to print Simpletron status")
+    print("to execute from file: python3 simpletron.py [file]")
     print("enter \"exit\" to quit")
+    print("enter \"input\" to enter instruction codes")
+    print("enter \"end\" to save instruction codes into memory")
+    print("enter \"run\" to execute instructions saved in memory\n")
 
 def saveline(line):
     memory[programCounter] = line
 
-def parseLine(instruction):
+def execute_line(instruction):
     global accumulator
     global programCounter
     branch = False
@@ -60,28 +63,46 @@ def parseLine(instruction):
         memory[operand] = accumulator
 
     if branch:
-        parseLine(memory[programCounter])
+        execute_line(memory[programCounter])
+
+def execute_instructions():
+    global memory
+    global programCounter
+    programCounter = 0
+    while memory[programCounter] != 0:
+        print("executing {:02d}# ".format(programCounter), memory[programCounter])
+        execute_line(memory[programCounter])
+        programCounter = programCounter + 1
 
 def interactive():
     global programCounter
-    print("Entering Simpletron interactive mode")
+    isReadingInstructions = False
+    isInstructionSaved = False
+    print("\nEntering Simpletron in interactive mode...\n")
     printHelp()
     while 1:
-        userIn = input(">>>")
+        userIn = input("{:02d}# ".format(programCounter) if isReadingInstructions else ">>>")
         try:
             userInput = int(userIn)
-            saveline(userInput)
-            parseLine(userInput)
-            programCounter = programCounter + 1
+            if isReadingInstructions and not isInstructionSaved:
+                saveline(userInput)
+                programCounter = programCounter + 1
         except ValueError:
             if userIn == "exit":
                 sys.exit()
             elif userIn == "status":
                 printStatus()
+            elif userIn == "input":
+                isReadingInstructions = True
+            elif userIn == "end":
+                isInstructionSaved = True
+                isReadingInstructions = False
+            elif userIn == "run":
+                execute_instructions()
             else:
                 printHelp()
 
-def run_script(filename):
+def load_script(filename):
     global memory
     global programCounter
     lineNumber = 0
@@ -91,18 +112,14 @@ def run_script(filename):
         line = line.strip()
         memory[lineNumber] = int(line)
         lineNumber = lineNumber + 1
-        print(line)
 
-    while memory[programCounter] != 0:
-        #print("executing ", memory[programCounter])
-        parseLine(memory[programCounter])
-        programCounter = programCounter + 1
+    execute_instructions()
 
 def main():
     arr = sys.argv[1:]
     if len(arr) == 0:
         interactive()
     else:
-        run_script(arr[0])
+        load_script(arr[0])
 
 if __name__ == "__main__" : main()
