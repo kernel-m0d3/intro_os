@@ -47,7 +47,7 @@ def execute_line(instruction):
     elif opCode == 32:
         accumulator = accumulator * memory[operand]
     elif opCode == 33:
-        accumulator = accumulator / memory[operand]
+        accumulator = accumulator // memory[operand]
     elif opCode == 10:
         numInput = input("Read number: ")
         try:
