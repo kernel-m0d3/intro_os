@@ -45,9 +45,9 @@ def execute_line(instruction):
     elif opCode == 31:
         accumulator = accumulator - memory[operand]
     elif opCode == 32:
-        accumulator = accumulator * memory[operand]
-    elif opCode == 33:
         accumulator = accumulator // memory[operand]
+    elif opCode == 33:
+        accumulator = accumulator * memory[operand]
     elif opCode == 10:
         numInput = input("Read number: ")
         try:
@@ -68,10 +68,12 @@ def execute_line(instruction):
 def execute_instructions():
     global memory
     global programCounter
+    global accumulator
     programCounter = 0
     while memory[programCounter] != 0:
-        print("executing {:02d}# ".format(programCounter), memory[programCounter])
+        #print("executing {:02d}# ".format(programCounter), memory[programCounter])
         execute_line(memory[programCounter])
+        #print("ACC is ", accumulator)
         programCounter = programCounter + 1
 
 def interactive():
