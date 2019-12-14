@@ -1,0 +1,8 @@
+to compile:
+	javac Simpletron.java
+	
+to run with file:
+	java Simpletron <filename>
+	
+to run without file:
+	java Simpletron

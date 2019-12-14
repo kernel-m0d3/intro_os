@@ -108,7 +108,10 @@ def load_script(filename):
     global memory
     global programCounter
     lineNumber = 0
-    sml_script = open(filename, 'r')
+    try:
+        sml_script = open(filename, 'r')
+    except IOerror as e:
+    	print(e)
 
     for line in sml_script:
         line = line.strip()
